@@ -32,4 +32,18 @@
         </activity>
     </application>
 
+    <activity
+        android:name="com.google.zxing.client.android.CaptureActivity"
+        android:configChanges="keyboardHidden|orientation"
+        android:exported="false"
+        android:launchMode="singleTask"
+        android:screenOrientation="landscape"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        android:windowSoftInputMode="adjustPan|stateAlwaysHidden" >
+        <intent-filter>
+            <action android:name="com.google.zxing.client.android.SCAN" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+    </activity>
+
 </manifest>
