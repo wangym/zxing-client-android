@@ -16,6 +16,7 @@
 
 package com.google.zxing.client.android;
 
+import com.android.zxing.client.android.R;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.camera.CameraManager;
@@ -66,27 +67,22 @@ public final class CaptureActivityHandler extends Handler {
 
   @Override
   public void handleMessage(Message message) {
-    switch (message.what) {
-      case R.id.restart_preview:
-        Log.d(TAG, "Got restart preview message");
-        restartPreviewAndDecode();
-        break;
-      case R.id.decode_succeeded:
-        Log.d(TAG, "Got decode succeeded message");
-        state = State.SUCCESS;
-        activity.handleDecode((Result) message.obj);
-        break;
-      case R.id.decode_failed:
-        // We're decoding as fast as possible, so when one decode fails, start another.
+    if (message.what == R.id.restart_preview) {
+		Log.d(TAG, "Got restart preview message");
+		restartPreviewAndDecode();
+	} else if (message.what == R.id.decode_succeeded) {
+		Log.d(TAG, "Got decode succeeded message");
+		state = State.SUCCESS;
+		activity.handleDecode((Result) message.obj);
+	} else if (message.what == R.id.decode_failed) {
+		// We're decoding as fast as possible, so when one decode fails, start another.
         state = State.PREVIEW;
-        cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
-        break;
-      case R.id.return_scan_result:
-        Log.d(TAG, "Got return scan result message");
-        activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
-        activity.finish();
-        break;
-    }
+		cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+	} else if (message.what == R.id.return_scan_result) {
+		Log.d(TAG, "Got return scan result message");
+		activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
+		activity.finish();
+	}
   }
 
   public void quitSynchronously() {

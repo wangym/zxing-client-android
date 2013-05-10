@@ -1,4 +1,4 @@
 zxing-lib
 =========
 
-Android ZXing Library
+ZXing project library for Android

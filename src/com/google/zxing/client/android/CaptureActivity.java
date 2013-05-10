@@ -16,6 +16,7 @@
 
 package com.google.zxing.client.android;
 
+import com.android.zxing.client.android.R;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.camera.CameraManager;
@@ -269,7 +270,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   private void displayFrameworkBugMessageAndExit() {
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle(getString(R.string.app_name));
     builder.setMessage(getString(R.string.zxing_msg_camera_framework_bug));
     builder.setPositiveButton(R.string.zxing_button_ok, new FinishListener(this));
     builder.setOnCancelListener(new FinishListener(this));

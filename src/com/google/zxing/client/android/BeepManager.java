@@ -28,6 +28,8 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import com.android.zxing.client.android.R;
+
 /**
  * Manages beeps and vibrations for {@link CaptureActivity}.
  */
