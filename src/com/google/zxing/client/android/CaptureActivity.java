@@ -239,7 +239,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     extras.putString(ZXingConstant.K_QR_CODE, rawResult.getText().trim());
     Intent intent = new Intent();
     intent.putExtras(extras);
-    intent.setClass(this, null);
+    intent.setClass(this, CaptureResultActivity.class);
     startActivity(intent);
   }
 
