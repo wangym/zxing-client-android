@@ -1,7 +1,5 @@
-.classpath
-.project
-.settings/
-bin/
-gen/
-
-/assets
+zxing-lib/.classpath
+zxing-lib/.project
+zxing-lib/.settings/
+zxing-lib/bin/
+zxing-lib/gen/
