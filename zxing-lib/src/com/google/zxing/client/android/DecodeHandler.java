@@ -16,7 +16,6 @@
 
 package com.google.zxing.client.android;
 
-import com.android.zxing.client.android.R;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.MultiFormatReader;

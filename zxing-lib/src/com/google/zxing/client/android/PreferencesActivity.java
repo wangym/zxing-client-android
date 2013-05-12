@@ -16,8 +16,6 @@
 
 package com.google.zxing.client.android;
 
-import com.android.zxing.client.android.R;
-
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;

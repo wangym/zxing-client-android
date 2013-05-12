@@ -16,7 +16,6 @@
 
 package com.google.zxing.client.android;
 
-import com.android.zxing.client.android.R;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.client.android.camera.CameraManager;
 
