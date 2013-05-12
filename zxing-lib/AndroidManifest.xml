@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <application>
+    <application android:label="@string/zxing_lib" >
         <activity
             android:name="com.google.zxing.client.android.CaptureActivity"
             android:configChanges="keyboardHidden|orientation"
