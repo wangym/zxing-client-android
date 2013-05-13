@@ -80,6 +80,9 @@ final class CameraConfigurationManager {
   }
 
   void setDesiredCameraParameters(Camera camera, boolean safeMode) {
+    // yumin
+	camera.setDisplayOrientation(90);
+
     Camera.Parameters parameters = camera.getParameters();
 
     if (parameters == null) {
