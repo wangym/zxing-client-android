@@ -51,6 +51,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   private static final String TAG = CaptureActivity.class.getSimpleName();
 
+  // yumin
+  @SuppressWarnings("rawtypes")
+  private Class resultActivity = null;
+
   private CameraManager cameraManager;
   private CaptureActivityHandler handler;
   private ViewfinderView viewfinderView;
@@ -73,10 +77,15 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     return cameraManager;
   }
 
+  @SuppressWarnings("rawtypes")
   @Override
   public void onCreate(Bundle icicle) {
 
 	super.onCreate(icicle);
+
+	// yumin
+	Bundle extras = getIntent().getExtras();
+	resultActivity = (Class) extras.getSerializable(ZXingConstant.K_RESULT_ACTIVITY);
 
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -233,12 +242,13 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     // Then not from history, so beep/vibrate and we have an image to draw on
     beepManager.playBeepSoundAndVibrate();
 
+    // yumin
     Bundle extras = new Bundle();
     extras.putString(ZXingConstant.K_FORMAT, rawResult.getBarcodeFormat().name());
     extras.putString(ZXingConstant.K_QR_CODE, rawResult.getText().trim());
     Intent intent = new Intent();
     intent.putExtras(extras);
-    intent.setClass(this, CaptureResultActivity.class);
+    intent.setClass(this, resultActivity.getClass());
     startActivity(intent);
   }
 
