@@ -36,6 +36,7 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -52,8 +53,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private static final String TAG = CaptureActivity.class.getSimpleName();
 
   // yumin
-  @SuppressWarnings("rawtypes")
-  private Class resultActivity = null;
+  private Class<Activity> resultActivity = null;
 
   private CameraManager cameraManager;
   private CaptureActivityHandler handler;
@@ -77,7 +77,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     return cameraManager;
   }
 
-  @SuppressWarnings("rawtypes")
+  @SuppressWarnings("unchecked")
   @Override
   public void onCreate(Bundle icicle) {
 
@@ -85,7 +85,11 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
 	// yumin
 	Bundle extras = getIntent().getExtras();
-	resultActivity = (Class) extras.getSerializable(ZXingConstant.K_RESULT_ACTIVITY);
+	Serializable serializable = extras.getSerializable(ZXingConstant.K_RESULT_ACTIVITY);
+	if (null == serializable) {
+		throw new RuntimeException("please use 'putSerializable' put result activity!");
+	}
+	resultActivity = (Class<Activity>) serializable;
 
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -248,7 +252,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     extras.putString(ZXingConstant.K_QR_CODE, rawResult.getText().trim());
     Intent intent = new Intent();
     intent.putExtras(extras);
-    intent.setClass(this, resultActivity.getClass());
+    intent.setClass(this, resultActivity);
     startActivity(intent);
   }
 
