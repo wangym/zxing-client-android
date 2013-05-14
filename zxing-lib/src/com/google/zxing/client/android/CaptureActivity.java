@@ -248,8 +248,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     // yumin
     Bundle extras = new Bundle();
-    extras.putString(ZXingConstant.K_FORMAT, rawResult.getBarcodeFormat().name());
-    extras.putString(ZXingConstant.K_QR_CODE, rawResult.getText().trim());
+    extras.putString(ZXingConstant.K_RESULT_FORMAT, rawResult.getBarcodeFormat().name());
+    extras.putString(ZXingConstant.K_RESULT_CONTENT, rawResult.getText().trim());
     Intent intent = new Intent();
     intent.putExtras(extras);
     intent.setClass(this, resultActivity);

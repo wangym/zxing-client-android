@@ -9,7 +9,7 @@ package com.google.zxing.client.android;
  */
 public final class ZXingConstant {
 
-	public static final String K_FORMAT = "format";
-	public static final String K_QR_CODE = "qrCode";
 	public static final String K_RESULT_ACTIVITY = "result_activity";
+	public static final String K_RESULT_CONTENT = "result_content";
+	public static final String K_RESULT_FORMAT = "result_format";
 }

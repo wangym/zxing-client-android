@@ -20,17 +20,16 @@ public class CaptureResultActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_capture_result);
 		initActivity();
-
 	}
 
 	private void initActivity() {
 
 		Bundle extras = getIntent().getExtras();
-		String format = extras.getString(ZXingConstant.K_FORMAT);
-		TextView tvFormat = (TextView) findViewById(R.id.tv_format);
+		String format = extras.getString(ZXingConstant.K_RESULT_FORMAT);
+		TextView tvFormat = (TextView) findViewById(R.id.tv_result_format);
 		tvFormat.setText(format);
-		String qrCode = extras.getString(ZXingConstant.K_QR_CODE);
-		TextView tvQRCode = (TextView) findViewById(R.id.tv_qr_code);
-		tvQRCode.setText(qrCode);
+		String content = extras.getString(ZXingConstant.K_RESULT_CONTENT);
+		TextView tvContent = (TextView) findViewById(R.id.tv_result_content);
+		tvContent.setText(content);
 	}
 }
