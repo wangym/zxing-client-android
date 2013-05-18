@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- ##### zxing-lib-example ##### -->
     <string name="app_name">ZXing-lib-example</string>
     <string name="next">next</string>
+    <!-- ##### zxing-lib ##### -->
+    <string name="zxing_msg_default_status">请将二维码图案置于方框内</string>
 
 </resources>
