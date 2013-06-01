@@ -17,6 +17,7 @@
 package com.google.zxing.client.android;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.camera.CameraManager;
 
@@ -25,7 +26,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -38,6 +38,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -61,6 +62,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private TextView statusView;
   private boolean hasSurface;
   private Collection<BarcodeFormat> decodeFormats;
+  private Map<DecodeHintType,?> decodeHints;
   private String characterSet;
   private InactivityTimer inactivityTimer;
   private BeepManager beepManager;
@@ -80,7 +82,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   @SuppressWarnings("unchecked")
   @Override
   public void onCreate(Bundle icicle) {
-
 	super.onCreate(icicle);
 
 	// yumin
@@ -98,8 +99,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     hasSurface = false;
     inactivityTimer = new InactivityTimer(this);
     beepManager = new BeepManager(this);
-
-    PreferenceManager.setDefaultValues(this, R.xml.preferences_zxing, false);
   }
 
   @Override
@@ -150,6 +149,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         // Scan the formats the intent requested, and return the result to the calling activity.
         decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
+        decodeHints = DecodeHintManager.parseDecodeHints(intent);
 
         if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
           int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
@@ -198,7 +198,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch (keyCode) {
-      case KeyEvent.KEYCODE_FOCUS:
       case KeyEvent.KEYCODE_CAMERA:
         // Handle these events so they don't launch the Camera app
         return true;
@@ -238,7 +237,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
    * A valid barcode has been found, so give an indication of success and show the results.
    *
    * @param rawResult The contents of the barcode.
-   * @param barcode   A greyscale bitmap of the camera data which was decoded.
    */
   public void handleDecode(Result rawResult) {
     inactivityTimer.onActivity();
@@ -246,7 +244,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     // Then not from history, so beep/vibrate and we have an image to draw on
     beepManager.playBeepSoundAndVibrate();
 
-    // yumin
+    // yumin TODO
     Bundle extras = new Bundle();
     extras.putString(ZXingConstant.K_RESULT_FORMAT, rawResult.getBarcodeFormat().name());
     extras.putString(ZXingConstant.K_RESULT_CONTENT, rawResult.getText().trim());
@@ -268,7 +266,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       cameraManager.openDriver(surfaceHolder);
       // Creating the handler starts the preview, which can also throw a RuntimeException.
       if (handler == null) {
-        handler = new CaptureActivityHandler(this, decodeFormats, characterSet, cameraManager);
+        handler = new CaptureActivityHandler(this, decodeFormats, decodeHints, characterSet, cameraManager);
       }
     } catch (IOException ioe) {
       Log.w(TAG, ioe);
@@ -289,13 +287,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     builder.show();
   }
 
-  public void restartPreviewAfterDelay(long delayMS) {
-    if (handler != null) {
-      handler.sendEmptyMessageDelayed(R.id.restart_preview, delayMS);
-    }
-    resetStatusView();
-  }
-
   private void resetStatusView() {
     statusView.setText(R.string.zxing_msg_default_status);
     statusView.setVisibility(View.VISIBLE);
@@ -306,3 +297,5 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     viewfinderView.drawViewfinder();
   }
 }
+
+// r2698

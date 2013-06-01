@@ -17,6 +17,7 @@
 package com.google.zxing.client.android;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.camera.CameraManager;
 
@@ -27,6 +28,7 @@ import android.os.Message;
 import android.util.Log;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * This class handles all the messaging which comprises the state machine for capture.
@@ -50,11 +52,12 @@ public final class CaptureActivityHandler extends Handler {
 
   CaptureActivityHandler(CaptureActivity activity,
                          Collection<BarcodeFormat> decodeFormats,
+                         Map<DecodeHintType,?> baseHints,
                          String characterSet,
                          CameraManager cameraManager) {
     this.activity = activity;
-    decodeThread = new DecodeThread(activity, decodeFormats, characterSet,
-        new ViewfinderResultPointCallback(activity.getViewfinderView()));
+    decodeThread = new DecodeThread(activity, decodeFormats, baseHints, characterSet,
+            new ViewfinderResultPointCallback(activity.getViewfinderView()));
     decodeThread.start();
     state = State.SUCCESS;
 
@@ -67,20 +70,20 @@ public final class CaptureActivityHandler extends Handler {
   @Override
   public void handleMessage(Message message) {
     if (message.what == R.id.restart_preview) {
-		Log.d(TAG, "Got restart preview message");
-		restartPreviewAndDecode();
+        Log.d(TAG, "Got restart preview message");
+        restartPreviewAndDecode();
 	} else if (message.what == R.id.decode_succeeded) {
-		Log.d(TAG, "Got decode succeeded message");
-		state = State.SUCCESS;
-		activity.handleDecode((Result) message.obj);
+        Log.d(TAG, "Got decode succeeded message");
+        state = State.SUCCESS;
+        activity.handleDecode((Result) message.obj);
 	} else if (message.what == R.id.decode_failed) {
-		// We're decoding as fast as possible, so when one decode fails, start another.
+        // We're decoding as fast as possible, so when one decode fails, start another.
         state = State.PREVIEW;
-		cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+        cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
 	} else if (message.what == R.id.return_scan_result) {
-		Log.d(TAG, "Got return scan result message");
-		activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
-		activity.finish();
+        Log.d(TAG, "Got return scan result message");
+        activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
+        activity.finish();
 	}
   }
 
@@ -110,3 +113,5 @@ public final class CaptureActivityHandler extends Handler {
   }
 
 }
+
+// r2796

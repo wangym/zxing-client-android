@@ -25,19 +25,18 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
-import com.google.zxing.client.android.PreferencesActivity;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.google.zxing.client.android.ZXingConstant;
+
 /**
  * A class which deals with reading, parsing, and setting the camera parameters which are used to
  * configure the camera hardware.
  */
-@SuppressWarnings({"deprecation"})
 final class CameraConfigurationManager {
 
   private static final String TAG = "CameraConfiguration";
@@ -46,7 +45,9 @@ final class CameraConfigurationManager {
   // below will still select the default (presumably 320x240) size for these. This prevents
   // accidental selection of very low resolution on some devices.
   private static final int MIN_PREVIEW_PIXELS = 470 * 320; // normal screen
-  private static final int MAX_PREVIEW_PIXELS = 1280 * 720;
+  private static final int MAX_PREVIEW_PIXELS = 1280 * 800;
+  //private static final float MAX_EXPOSURE_COMPENSATION = 1.5f;
+  //private static final float MIN_EXPOSURE_COMPENSATION = 0.0f;
 
   private final Context context;
   private Point screenResolution;
@@ -59,6 +60,7 @@ final class CameraConfigurationManager {
   /**
    * Reads, one time, values from the camera that are needed by the app.
    */
+  @SuppressWarnings("deprecation")
   void initFromCameraParameters(Camera camera) {
     Camera.Parameters parameters = camera.getParameters();
     WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -67,13 +69,12 @@ final class CameraConfigurationManager {
     int height = display.getHeight();
     // We're landscape-only, and have apparently seen issues with display thinking it's portrait 
     // when waking from sleep. If it's not landscape, assume it's mistaken and reverse them:
-    // yumin
-    /*if (width < height) {
+    if (width < height) {
       Log.i(TAG, "Display reports portrait orientation; assuming this is incorrect");
       int temp = width;
       width = height;
       height = temp;
-    }*/
+    }
     screenResolution = new Point(width, height);
     Log.i(TAG, "Screen resolution: " + screenResolution);
     cameraResolution = findBestPreviewSizeValue(parameters, screenResolution);
@@ -81,9 +82,6 @@ final class CameraConfigurationManager {
   }
 
   void setDesiredCameraParameters(Camera camera, boolean safeMode) {
-    // yumin
-	camera.setDisplayOrientation(90);
-
     Camera.Parameters parameters = camera.getParameters();
 
     if (parameters == null) {
@@ -102,8 +100,8 @@ final class CameraConfigurationManager {
     initializeTorch(parameters, prefs, safeMode);
 
     String focusMode = null;
-    if (prefs.getBoolean(PreferencesActivity.KEY_AUTO_FOCUS, true)) {
-      if (safeMode || prefs.getBoolean(PreferencesActivity.KEY_DISABLE_CONTINUOUS_FOCUS, false)) {
+    if (prefs.getBoolean(ZXingConstant.KEY_AUTO_FOCUS, true)) {
+      if (safeMode || prefs.getBoolean(ZXingConstant.KEY_DISABLE_CONTINUOUS_FOCUS, false)) {
         focusMode = findSettableValue(parameters.getSupportedFocusModes(),
                                       Camera.Parameters.FOCUS_MODE_AUTO);
       } else {
@@ -123,6 +121,14 @@ final class CameraConfigurationManager {
       parameters.setFocusMode(focusMode);
     }
 
+    if (prefs.getBoolean(ZXingConstant.KEY_INVERT_SCAN, false)) {
+      String colorMode = findSettableValue(parameters.getSupportedColorEffects(),
+                                           Camera.Parameters.EFFECT_NEGATIVE);
+      if (colorMode != null) {
+        parameters.setColorEffect(colorMode);
+      }
+    }
+
     parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
     camera.setParameters(parameters);
   }
@@ -135,21 +141,27 @@ final class CameraConfigurationManager {
     return screenResolution;
   }
 
+  boolean getTorchState(Camera camera) {
+    if (camera != null) {
+      Camera.Parameters parameters = camera.getParameters();
+      if (parameters != null) {
+        String flashMode = camera.getParameters().getFlashMode();
+        return flashMode != null &&
+            (Camera.Parameters.FLASH_MODE_ON.equals(flashMode) ||
+             Camera.Parameters.FLASH_MODE_TORCH.equals(flashMode));
+      }
+    }
+    return false;
+  }
+
   void setTorch(Camera camera, boolean newSetting) {
     Camera.Parameters parameters = camera.getParameters();
     doSetTorch(parameters, newSetting, false);
     camera.setParameters(parameters);
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    boolean currentSetting = prefs.getBoolean(PreferencesActivity.KEY_FRONT_LIGHT, false);
-    if (currentSetting != newSetting) {
-      SharedPreferences.Editor editor = prefs.edit();
-      editor.putBoolean(PreferencesActivity.KEY_FRONT_LIGHT, newSetting);
-      editor.commit();
-    }
   }
 
   private void initializeTorch(Camera.Parameters parameters, SharedPreferences prefs, boolean safeMode) {
-    boolean currentSetting = prefs.getBoolean(PreferencesActivity.KEY_FRONT_LIGHT, false);
+    boolean currentSetting = FrontLightMode.readPref(prefs) == FrontLightMode.ON;
     doSetTorch(parameters, currentSetting, safeMode);
   }
 
@@ -166,6 +178,31 @@ final class CameraConfigurationManager {
     if (flashMode != null) {
       parameters.setFlashMode(flashMode);
     }
+
+    /*
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    if (!prefs.getBoolean(PreferencesActivity.KEY_DISABLE_EXPOSURE, false)) {
+      if (!safeMode) {
+        int minExposure = parameters.getMinExposureCompensation();
+        int maxExposure = parameters.getMaxExposureCompensation();
+        if (minExposure != 0 || maxExposure != 0) {
+          float step = parameters.getExposureCompensationStep();
+          int desiredCompensation;
+          if (newSetting) {
+            // Light on; set low exposue compensation
+            desiredCompensation = Math.max((int) (MIN_EXPOSURE_COMPENSATION / step), minExposure);
+          } else {
+            // Light off; set high compensation
+            desiredCompensation = Math.min((int) (MAX_EXPOSURE_COMPENSATION / step), maxExposure);
+          }
+          Log.i(TAG, "Setting exposure compensation to " + desiredCompensation + " / " + (step * desiredCompensation));
+          parameters.setExposureCompensation(desiredCompensation);
+        } else {
+          Log.i(TAG, "Camera does not support exposure compensation");
+        }
+      }
+    }
+     */
   }
 
   private Point findBestPreviewSizeValue(Camera.Parameters parameters, Point screenResolution) {
@@ -257,3 +294,5 @@ final class CameraConfigurationManager {
   }
 
 }
+
+// r2794
