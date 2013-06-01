@@ -69,12 +69,15 @@ final class CameraConfigurationManager {
     int height = display.getHeight();
     // We're landscape-only, and have apparently seen issues with display thinking it's portrait 
     // when waking from sleep. If it's not landscape, assume it's mistaken and reverse them:
-    if (width < height) {
+
+    // yumin
+    /*if (width < height) {
       Log.i(TAG, "Display reports portrait orientation; assuming this is incorrect");
       int temp = width;
       width = height;
       height = temp;
-    }
+    }*/
+
     screenResolution = new Point(width, height);
     Log.i(TAG, "Screen resolution: " + screenResolution);
     cameraResolution = findBestPreviewSizeValue(parameters, screenResolution);
@@ -83,6 +86,9 @@ final class CameraConfigurationManager {
 
   void setDesiredCameraParameters(Camera camera, boolean safeMode) {
     Camera.Parameters parameters = camera.getParameters();
+
+    // yumin
+    camera.setDisplayOrientation(90);
 
     if (parameters == null) {
       Log.w(TAG, "Device error: no camera parameters are available. Proceeding without configuration.");
