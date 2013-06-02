@@ -16,7 +16,7 @@
 
 package com.google.zxing.client.android.camera;
 
-import com.google.zxing.client.android.ZXingConstant;
+import me.yumin.android.zxing.etc.ZXingConstant;
 
 import android.content.SharedPreferences;
 

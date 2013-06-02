@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.google.zxing.client.android;
+package me.yumin.android.zxing.etc;
 
 import java.util.Collection;
 import java.util.EnumSet;

@@ -30,6 +30,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import me.yumin.android.zxing.etc.ZXingConstant;
+
 /**
  * This thread does all the heavy lifting of decoding the images.
  *

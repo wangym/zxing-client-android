@@ -39,6 +39,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import me.yumin.android.zxing.etc.ZXingConstant;
+import me.yumin.android.zxing.etc.ZXingInput;
+
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
  * viewfinder to help the user place the barcode correctly, shows feedback as the image processing

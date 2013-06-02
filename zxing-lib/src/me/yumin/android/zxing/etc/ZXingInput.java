@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.google.zxing.client.android;
+package me.yumin.android.zxing.etc;
 
 import java.io.Serializable;
 import java.util.Collection;

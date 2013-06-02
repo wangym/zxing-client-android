@@ -6,9 +6,10 @@ package me.yumin.android.example.zxing;
 /*import java.util.EnumMap;
 import java.util.Map;
 import com.google.zxing.DecodeHintType; */
+import me.yumin.android.zxing.etc.ZXingConstant;
+import me.yumin.android.zxing.etc.ZXingInput;
+
 import com.google.zxing.client.android.CaptureActivity;
-import com.google.zxing.client.android.ZXingConstant;
-import com.google.zxing.client.android.ZXingInput;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;

@@ -3,7 +3,7 @@
  */
 package me.yumin.android.example.zxing;
 
-import com.google.zxing.client.android.ZXingConstant;
+import me.yumin.android.zxing.etc.ZXingConstant;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
