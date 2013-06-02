@@ -2,7 +2,6 @@
 <resources>
 
     <!-- ##### zxing-lib ##### -->
-    <string name="app_name">ZXing-lib</string>
     <string name="zxing_msg_default_status">请将二维码置于取景框内扫描</string>
 
 </resources>
