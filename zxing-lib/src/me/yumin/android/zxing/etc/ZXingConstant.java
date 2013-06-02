@@ -46,6 +46,4 @@ public final class ZXingConstant {
 	/* ##### yumin ##### */
 	public static final String K_INPUT = "input";
 	public static final String K_OUTPUT = "output";
-	public static final String K_RESULT_CONTENT = "result_content";
-	public static final String K_RESULT_CONTENT_FORMAT = "result_CONTENT_format";
 }

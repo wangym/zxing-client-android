@@ -4,6 +4,7 @@
 package me.yumin.android.example.zxing;
 
 import me.yumin.android.zxing.etc.ZXingConstant;
+import me.yumin.android.zxing.etc.ZXingOutput;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -25,11 +26,10 @@ public class CaptureResultActivity extends Activity {
 	private void initActivity() {
 
 		Bundle extras = getIntent().getExtras();
-		String format = extras.getString(ZXingConstant.K_RESULT_CONTENT_FORMAT);
+		ZXingOutput output = (ZXingOutput) extras.getSerializable(ZXingConstant.K_OUTPUT);
 		TextView tvFormat = (TextView) findViewById(R.id.tv_result_format);
-		tvFormat.setText(format);
-		String content = extras.getString(ZXingConstant.K_RESULT_CONTENT);
-		TextView tvContent = (TextView) findViewById(R.id.tv_result_content);
-		tvContent.setText(content);
+		tvFormat.setText(output.getBarcodeFormat().name());
+		TextView tvText = (TextView) findViewById(R.id.tv_result_text);
+		tvText.setText(output.getText());
 	}
 }

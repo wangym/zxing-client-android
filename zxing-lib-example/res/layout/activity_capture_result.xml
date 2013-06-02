@@ -12,7 +12,7 @@
         android:textIsSelectable="true" />
 
     <TextView
-        android:id="@+id/tv_result_content"
+        android:id="@+id/tv_result_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@id/tv_result_format"

@@ -41,6 +41,7 @@ import java.util.Map;
 
 import me.yumin.android.zxing.etc.ZXingConstant;
 import me.yumin.android.zxing.etc.ZXingInput;
+import me.yumin.android.zxing.etc.ZXingOutput;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -211,8 +212,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     // yumin
     Bundle extras = new Bundle();
-    extras.putString(ZXingConstant.K_RESULT_CONTENT, rawResult.getText().trim());
-    extras.putString(ZXingConstant.K_RESULT_CONTENT_FORMAT, rawResult.getBarcodeFormat().name());
+    extras.putSerializable(ZXingConstant.K_OUTPUT, new ZXingOutput(rawResult));
     Intent intent = new Intent();
     intent.putExtras(extras);
     intent.setClass(this, input.getResultActivity());
