@@ -3,8 +3,12 @@
  */
 package me.yumin.android.example.zxing;
 
+/*import java.util.EnumMap;
+import java.util.Map;
+import com.google.zxing.DecodeHintType; */
 import com.google.zxing.client.android.CaptureActivity;
 import com.google.zxing.client.android.ZXingConstant;
+import com.google.zxing.client.android.ZXingInput;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -38,11 +42,20 @@ public class MainActivity extends Activity {
 
 	private void doNext() {
 
-		Bundle extras = new Bundle();
-		extras.putSerializable(ZXingConstant.K_RESULT_ACTIVITY, CaptureResultActivity.class);
+		ZXingInput input = new ZXingInput(CaptureResultActivity.class);
+		/*input.setDecodeFormats(ZXingConstant.QR_CODE_FORMATS);
+		Map<DecodeHintType, Object> decodeHints = new EnumMap<DecodeHintType,Object>(DecodeHintType.class);
+		decodeHints.put(DecodeHintType.ALLOWED_LENGTHS, 2);
+		input.setDecodeHints(decodeHints);
+		input.setCharacterSet("GBK");*/
+
+		Bundle bundle = new Bundle();
+		bundle.putSerializable(ZXingConstant.K_INPUT, input);
+
 		Intent intent = new Intent();
-		intent.putExtras(extras);
+		intent.putExtras(bundle);
 		intent.setClass(this, CaptureActivity.class);
+
 		startActivity(intent);
 	}
 }

@@ -25,7 +25,7 @@ public class CaptureResultActivity extends Activity {
 	private void initActivity() {
 
 		Bundle extras = getIntent().getExtras();
-		String format = extras.getString(ZXingConstant.K_RESULT_FORMAT);
+		String format = extras.getString(ZXingConstant.K_RESULT_CONTENT_FORMAT);
 		TextView tvFormat = (TextView) findViewById(R.id.tv_result_format);
 		tvFormat.setText(format);
 		String content = extras.getString(ZXingConstant.K_RESULT_CONTENT);

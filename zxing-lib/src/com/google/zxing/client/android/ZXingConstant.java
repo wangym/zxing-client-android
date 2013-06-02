@@ -13,7 +13,7 @@ import com.google.zxing.BarcodeFormat;
  */
 public final class ZXingConstant {
 
-	/* zxing */
+	/* ##### zxing ##### */
 	// key
 	public static final String KEY_PLAY_BEEP = "preferences_play_beep";
 	public static final String KEY_VIBRATE = "preferences_vibrate";
@@ -43,8 +43,9 @@ public final class ZXingConstant {
 		ONE_D_FORMATS.addAll(PRODUCT_FORMATS);
 	}
 
-	/* yumin */
-	public static final String K_RESULT_ACTIVITY = "result_activity";
+	/* ##### yumin ##### */
+	public static final String K_INPUT = "input";
+	public static final String K_OUTPUT = "output";
 	public static final String K_RESULT_CONTENT = "result_content";
 	public static final String K_RESULT_CONTENT_FORMAT = "result_CONTENT_format";
 }

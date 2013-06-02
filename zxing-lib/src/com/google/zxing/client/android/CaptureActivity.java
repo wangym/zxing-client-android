@@ -53,7 +53,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private static final String TAG = CaptureActivity.class.getSimpleName();
 
   // yumin
-  private Class<Activity> resultActivity = null;
+  private ZXingInput input = null;
 
   private CameraManager cameraManager;
   private CaptureActivityHandler handler;
@@ -77,18 +77,17 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     return cameraManager;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public void onCreate(Bundle icicle) {
 	super.onCreate(icicle);
 
 	// yumin
 	Bundle extras = getIntent().getExtras();
-	Serializable serializable = extras.getSerializable(ZXingConstant.K_RESULT_ACTIVITY);
+	Serializable serializable = extras.getSerializable(ZXingConstant.K_INPUT);
 	if (null == serializable) {
-		throw new RuntimeException("please use 'putSerializable' put result activity!");
+		throw new IllegalArgumentException("Key 'input' must not be null!");
 	}
-	resultActivity = (Class<Activity>) serializable;
+	input = (ZXingInput) serializable;
 
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -134,6 +133,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     decodeFormats = null;
     decodeHints = null;
     characterSet = null;
+
+    decodeFormats = input.getDecodeFormats();
+    decodeHints = input.getDecodeHints();
+    characterSet = input.getCharacterSet();
   }
 
   @Override
@@ -209,7 +212,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     extras.putString(ZXingConstant.K_RESULT_CONTENT_FORMAT, rawResult.getBarcodeFormat().name());
     Intent intent = new Intent();
     intent.putExtras(extras);
-    intent.setClass(this, resultActivity);
+    intent.setClass(this, input.getResultActivity());
     startActivity(intent);
   }
 
