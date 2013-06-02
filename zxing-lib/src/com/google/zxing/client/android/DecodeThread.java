@@ -37,9 +37,6 @@ import java.util.concurrent.CountDownLatch;
  */
 final class DecodeThread extends Thread {
 
-  public static final String BARCODE_BITMAP = "barcode_bitmap";
-  public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
-
   private final CaptureActivity activity;
   private final Map<DecodeHintType,Object> hints;
   private Handler handler;
@@ -62,9 +59,9 @@ final class DecodeThread extends Thread {
     // The prefs can't change while the thread is running, so pick them up once here.
     if (decodeFormats == null || decodeFormats.isEmpty()) {
       decodeFormats = EnumSet.noneOf(BarcodeFormat.class);
-      decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
-      decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
-      decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
+      decodeFormats.addAll(ZXingConstant.ONE_D_FORMATS);
+      decodeFormats.addAll(ZXingConstant.QR_CODE_FORMATS);
+      decodeFormats.addAll(ZXingConstant.DATA_MATRIX_FORMATS);
     }
     hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
 

@@ -22,7 +22,6 @@ import com.google.zxing.Result;
 import com.google.zxing.client.android.camera.CameraManager;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -64,7 +63,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private Collection<BarcodeFormat> decodeFormats;
   private Map<DecodeHintType,?> decodeHints;
   private String characterSet;
-  private InactivityTimer inactivityTimer;
   private BeepManager beepManager;
 
   ViewfinderView getViewfinderView() {
@@ -97,7 +95,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     setContentView(R.layout.activity_zxing_capture);
 
     hasSurface = false;
-    inactivityTimer = new InactivityTimer(this);
     beepManager = new BeepManager(this);
   }
 
@@ -134,41 +131,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     beepManager.updatePrefs();
 
-    inactivityTimer.onResume();
-
-    Intent intent = getIntent();
-
     decodeFormats = null;
+    decodeHints = null;
     characterSet = null;
-
-    if (intent != null) {
-
-      String action = intent.getAction();
-
-      if (Intents.Scan.ACTION.equals(action)) {
-
-        // Scan the formats the intent requested, and return the result to the calling activity.
-        decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
-        decodeHints = DecodeHintManager.parseDecodeHints(intent);
-
-        if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
-          int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
-          int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
-          if (width > 0 && height > 0) {
-            cameraManager.setManualFramingRect(width, height);
-          }
-        }
-        
-        String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
-        if (customPromptMessage != null) {
-          statusView.setText(customPromptMessage);
-        }
-
-      }
-
-      characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
-
-    }
   }
 
   @Override
@@ -177,7 +142,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       handler.quitSynchronously();
       handler = null;
     }
-    inactivityTimer.onPause();
     cameraManager.closeDriver();
     if (!hasSurface) {
       SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
@@ -189,9 +153,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   protected void onDestroy() {
-    if (null != inactivityTimer) {
-    	inactivityTimer.shutdown();
-    }
     super.onDestroy();
   }
 
@@ -230,7 +191,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
   }
 
   /**
@@ -239,15 +199,14 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
    * @param rawResult The contents of the barcode.
    */
   public void handleDecode(Result rawResult) {
-    inactivityTimer.onActivity();
 
     // Then not from history, so beep/vibrate and we have an image to draw on
     beepManager.playBeepSoundAndVibrate();
 
-    // yumin TODO
+    // yumin
     Bundle extras = new Bundle();
-    extras.putString(ZXingConstant.K_RESULT_FORMAT, rawResult.getBarcodeFormat().name());
     extras.putString(ZXingConstant.K_RESULT_CONTENT, rawResult.getText().trim());
+    extras.putString(ZXingConstant.K_RESULT_CONTENT_FORMAT, rawResult.getBarcodeFormat().name());
     Intent intent = new Intent();
     intent.putExtras(extras);
     intent.setClass(this, resultActivity);
@@ -270,21 +229,11 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       }
     } catch (IOException ioe) {
       Log.w(TAG, ioe);
-      displayFrameworkBugMessageAndExit();
     } catch (RuntimeException e) {
       // Barcode Scanner has seen crashes in the wild of this variety:
       // java.?lang.?RuntimeException: Fail to connect to camera service
       Log.w(TAG, "Unexpected error initializing camera", e);
-      displayFrameworkBugMessageAndExit();
     }
-  }
-
-  private void displayFrameworkBugMessageAndExit() {
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setMessage(getString(R.string.zxing_msg_camera_framework_bug));
-    builder.setPositiveButton(R.string.zxing_button_ok, new FinishListener(this));
-    builder.setOnCancelListener(new FinishListener(this));
-    builder.show();
   }
 
   private void resetStatusView() {
