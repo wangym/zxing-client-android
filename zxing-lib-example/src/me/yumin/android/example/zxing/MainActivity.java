@@ -5,7 +5,7 @@ package me.yumin.android.example.zxing;
 
 /*import java.util.EnumMap;
 import java.util.Map;
-import com.google.zxing.DecodeHintType; */
+import com.google.zxing.DecodeHintType;*/
 import me.yumin.android.zxing.etc.ZXingConstant;
 import me.yumin.android.zxing.etc.ZXingInput;
 import com.google.zxing.client.android.CaptureActivity;
@@ -46,8 +46,8 @@ public class MainActivity extends Activity {
 		/*input.setDecodeFormats(ZXingConstant.QR_CODE_FORMATS);
 		Map<DecodeHintType, Object> decodeHints = new EnumMap<DecodeHintType,Object>(DecodeHintType.class);
 		decodeHints.put(DecodeHintType.ALLOWED_LENGTHS, 2);
-		input.setDecodeHints(decodeHints);
-		input.setCharacterSet("GBK");*/
+		input.setDecodeHints(decodeHints);*/
+		input.setCharacterSet("GBK");
 
 		Bundle bundle = new Bundle();
 		bundle.putSerializable(ZXingConstant.K_INPUT, input);
