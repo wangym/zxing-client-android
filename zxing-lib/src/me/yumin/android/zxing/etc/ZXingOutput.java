@@ -29,6 +29,20 @@ public class ZXingOutput implements Serializable {
 	private Map<ResultMetadataType, Object> resultMetadata;
 	private long timestamp;
 
+	@Override
+	public String toString() {
+
+		String delimiter = "\t";
+		String string = new StringBuilder(text).
+				append(delimiter).append(String.valueOf(rawBytes)).
+				append(delimiter).append(barcodeFormat.toString()).
+				append(delimiter).append(resultMetadata.toString()).
+				append(delimiter).append(timestamp).
+				toString();
+
+		return string;
+	}
+
 	/**
 	 * 
 	 */
