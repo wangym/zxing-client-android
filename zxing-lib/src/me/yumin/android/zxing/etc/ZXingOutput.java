@@ -35,8 +35,8 @@ public class ZXingOutput implements Serializable {
 		String delimiter = "\t";
 		String string = new StringBuilder(text).
 				append(delimiter).append(String.valueOf(rawBytes)).
-				append(delimiter).append(barcodeFormat.toString()).
-				append(delimiter).append(resultMetadata.toString()).
+				append(delimiter).append(String.valueOf(barcodeFormat)).
+				append(delimiter).append(String.valueOf(resultMetadata)).
 				append(delimiter).append(timestamp).
 				toString();
 
