@@ -8,7 +8,6 @@ import java.util.Map;
 import com.google.zxing.DecodeHintType; */
 import me.yumin.android.zxing.etc.ZXingConstant;
 import me.yumin.android.zxing.etc.ZXingInput;
-
 import com.google.zxing.client.android.CaptureActivity;
 import android.os.Bundle;
 import android.view.View;
