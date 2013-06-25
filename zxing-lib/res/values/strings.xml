@@ -2,6 +2,6 @@
 <resources>
 
     <!-- ##### zxing-lib ##### -->
-    <string name="zxing_msg_default_status">请将二维码置于取景框内扫描</string>
+    <string name="zxing_msg_default_status">Place a barcode inside the viewfinder rectangle to scan it.</string>
 
 </resources>

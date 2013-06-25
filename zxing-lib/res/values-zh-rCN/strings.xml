@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ##### zxing-lib ##### -->
+    <string name="zxing_msg_default_status">请将二维码置于取景框内扫描</string>
+
+</resources>
