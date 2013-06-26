@@ -10,8 +10,6 @@ import me.yumin.android.zxing.etc.ZXingConstant;
 import me.yumin.android.zxing.etc.ZXingInput;
 import com.google.zxing.client.android.CaptureActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 import android.app.Activity;
 import android.content.Intent;
 
@@ -25,22 +23,10 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		initActivity();
+		doZXing();
 	}
 
-	private void initActivity() {
-
-		Button btnNext = (Button) findViewById(R.id.btn_next);
-		btnNext.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				doNext();
-			}
-		});
-	}
-
-	private void doNext() {
+	private void doZXing() {
 
 		ZXingInput input = new ZXingInput(CaptureResultActivity.class);
 		/*input.setDecodeFormats(ZXingConstant.QR_CODE_FORMATS);
@@ -51,11 +37,10 @@ public class MainActivity extends Activity {
 
 		Bundle bundle = new Bundle();
 		bundle.putSerializable(ZXingConstant.K_INPUT, input);
-
 		Intent intent = new Intent();
 		intent.putExtras(bundle);
 		intent.setClass(this, CaptureActivity.class);
-
 		startActivity(intent);
+		finish();
 	}
 }
