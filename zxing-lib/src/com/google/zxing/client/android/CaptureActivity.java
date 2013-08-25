@@ -51,7 +51,7 @@ import me.yumin.android.zxing.etc.ZXingOutput;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Sean Owen
  */
-@SuppressWarnings({ "deprecation" })
+@SuppressWarnings("deprecation")
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
   private static final String TAG = CaptureActivity.class.getSimpleName();
@@ -67,7 +67,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private Collection<BarcodeFormat> decodeFormats;
   private Map<DecodeHintType,?> decodeHints;
   private String characterSet;
+  private InactivityTimer inactivityTimer;
   private BeepManager beepManager;
+  private AmbientLightManager ambientLightManager;
 
   ViewfinderView getViewfinderView() {
     return viewfinderView;
@@ -83,22 +85,24 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   public void onCreate(Bundle icicle) {
-	super.onCreate(icicle);
+    super.onCreate(icicle);
 
-	// yumin
-	Bundle extras = getIntent().getExtras();
-	Serializable serializable = extras.getSerializable(ZXingConstant.K_INPUT);
-	if (null == serializable) {
-		throw new IllegalArgumentException("Key 'input' must not be null!");
-	}
-	input = (ZXingInput) serializable;
+    // yumin
+    Bundle extras = getIntent().getExtras();
+    Serializable serializable = extras.getSerializable(ZXingConstant.K_INPUT);
+    if (null == serializable) {
+    	throw new IllegalArgumentException("Key 'input' must not be null!");
+    }
+    input = (ZXingInput) serializable;
 
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     setContentView(R.layout.activity_zxing_capture);
 
     hasSurface = false;
+    inactivityTimer = new InactivityTimer(this);
     beepManager = new BeepManager(this);
+    ambientLightManager = new AmbientLightManager(this);
   }
 
   @Override
@@ -133,11 +137,15 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
 
     beepManager.updatePrefs();
+    ambientLightManager.start(cameraManager);
+
+    inactivityTimer.onResume();
 
     decodeFormats = null;
     decodeHints = null;
     characterSet = null;
 
+    // yumin
     decodeFormats = input.getDecodeFormats();
     decodeHints = input.getDecodeHints();
     characterSet = input.getCharacterSet();
@@ -149,6 +157,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       handler.quitSynchronously();
       handler = null;
     }
+    inactivityTimer.onPause();
+    ambientLightManager.stop();
     cameraManager.closeDriver();
     if (!hasSurface) {
       SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
@@ -160,12 +170,16 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   protected void onDestroy() {
+    inactivityTimer.shutdown();
     super.onDestroy();
   }
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch (keyCode) {
+      case KeyEvent.KEYCODE_BACK:
+        break;
+      case KeyEvent.KEYCODE_FOCUS:
       case KeyEvent.KEYCODE_CAMERA:
         // Handle these events so they don't launch the Camera app
         return true;
@@ -198,6 +212,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   @Override
   public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
   }
 
   /**
@@ -206,6 +221,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
    * @param rawResult The contents of the barcode.
    */
   public void handleDecode(Result rawResult) {
+    inactivityTimer.onActivity();
 
     // Then not from history, so beep/vibrate and we have an image to draw on
     beepManager.playBeepSoundAndVibrate();
@@ -253,4 +269,4 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   }
 }
 
-// r2698
+// r2864
