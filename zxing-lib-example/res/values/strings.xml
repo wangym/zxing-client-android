@@ -3,5 +3,8 @@
 
     <!-- ##### zxing-lib-example ##### -->
     <string name="app_name">zxing-lib-example</string>
+    <string name="scan">scan</string>
+    <string name="scan_gbk">scan_gbk</string>
+    <string name="scan_utf_8">scan_utf_8</string>
 
 </resources>

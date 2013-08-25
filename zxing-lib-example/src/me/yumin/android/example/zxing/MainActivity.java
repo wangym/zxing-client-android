@@ -3,13 +3,12 @@
  */
 package me.yumin.android.example.zxing;
 
-/*import java.util.EnumMap;
-import java.util.Map;
-import com.google.zxing.DecodeHintType;*/
 import me.yumin.android.zxing.etc.ZXingConstant;
 import me.yumin.android.zxing.etc.ZXingInput;
 import com.google.zxing.client.android.CaptureActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.app.Activity;
 import android.content.Intent;
 
@@ -23,17 +22,43 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		doZXing();
+		setContentView(R.layout.activity_main);
+		initActivity();
 	}
 
-	private void doZXing() {
+	private void initActivity() {
+
+		Button btnScan = (Button) findViewById(R.id.scan);
+		btnScan.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				doZXing(null);
+			}
+		});
+
+		Button btnScanGbk = (Button) findViewById(R.id.scan_gbk);
+		btnScanGbk.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				doZXing("GBK");
+			}
+		});
+
+		Button btnScanUtf8 = (Button) findViewById(R.id.scan_utf_8);
+		btnScanUtf8.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				doZXing("UTF-8");
+			}
+		});
+	}
+
+	private void doZXing(String characterSet) {
 
 		ZXingInput input = new ZXingInput(CaptureResultActivity.class);
-		/*input.setDecodeFormats(ZXingConstant.QR_CODE_FORMATS);
-		Map<DecodeHintType, Object> decodeHints = new EnumMap<DecodeHintType,Object>(DecodeHintType.class);
-		decodeHints.put(DecodeHintType.ALLOWED_LENGTHS, 2);
-		input.setDecodeHints(decodeHints);*/
-		input.setCharacterSet("GBK");
+		if (null != characterSet) {
+			input.setCharacterSet(characterSet);
+		}
 
 		Bundle bundle = new Bundle();
 		bundle.putSerializable(ZXingConstant.K_INPUT, input);
@@ -41,6 +66,5 @@ public class MainActivity extends Activity {
 		intent.putExtras(bundle);
 		intent.setClass(this, CaptureActivity.class);
 		startActivity(intent);
-		finish();
 	}
 }
