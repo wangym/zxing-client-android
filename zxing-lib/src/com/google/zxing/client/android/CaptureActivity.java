@@ -51,7 +51,6 @@ import me.yumin.android.zxing.etc.ZXingOutput;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Sean Owen
  */
-@SuppressWarnings("deprecation")
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
   private static final String TAG = CaptureActivity.class.getSimpleName();
@@ -133,7 +132,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     } else {
       // Install the callback and wait for surfaceCreated() to init the camera.
       surfaceHolder.addCallback(this);
-      surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     beepManager.updatePrefs();
@@ -269,4 +267,4 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   }
 }
 
-// r2864
+// r2880

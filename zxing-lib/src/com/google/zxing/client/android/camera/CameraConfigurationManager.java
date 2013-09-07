@@ -61,25 +61,13 @@ final class CameraConfigurationManager {
   /**
    * Reads, one time, values from the camera that are needed by the app.
    */
-  @SuppressWarnings("deprecation")
   void initFromCameraParameters(Camera camera) {
     Camera.Parameters parameters = camera.getParameters();
     WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     Display display = manager.getDefaultDisplay();
-	int width = display.getWidth();
-    int height = display.getHeight();
-    // We're landscape-only, and have apparently seen issues with display thinking it's portrait 
-    // when waking from sleep. If it's not landscape, assume it's mistaken and reverse them:
-
-    // yumin
-    /*if (width < height) {
-      Log.i(TAG, "Display reports portrait orientation; assuming this is incorrect");
-      int temp = width;
-      width = height;
-      height = temp;
-    }*/
-
-    screenResolution = new Point(width, height);
+    Point theScreenResolution = new Point();
+    display.getSize(theScreenResolution);
+    screenResolution = theScreenResolution;
     Log.i(TAG, "Screen resolution: " + screenResolution);
     cameraResolution = findBestPreviewSizeValue(parameters, screenResolution);
     Log.i(TAG, "Camera resolution: " + cameraResolution);
@@ -88,8 +76,8 @@ final class CameraConfigurationManager {
   void setDesiredCameraParameters(Camera camera, boolean safeMode) {
     Camera.Parameters parameters = camera.getParameters();
 
-	// yumin
-	camera.setDisplayOrientation(90);
+    // yumin
+    camera.setDisplayOrientation(90);
 
     if (parameters == null) {
       Log.w(TAG, "Device error: no camera parameters are available. Proceeding without configuration.");
@@ -113,8 +101,8 @@ final class CameraConfigurationManager {
                                       Camera.Parameters.FOCUS_MODE_AUTO);
       } else {
         focusMode = findSettableValue(parameters.getSupportedFocusModes(),
-                                      "continuous-picture", // Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE in 4.0+
-                                      "continuous-video",   // Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO in 4.0+
+                                      Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE,
+                                      Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
                                       Camera.Parameters.FOCUS_MODE_AUTO);
       }
     }
@@ -321,4 +309,4 @@ final class CameraConfigurationManager {
 
 }
 
-// r2863
+// r2880

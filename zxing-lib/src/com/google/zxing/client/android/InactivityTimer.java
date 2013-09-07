@@ -25,9 +25,6 @@ import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.util.Log;
 
-import com.google.zxing.client.android.common.executor.AsyncTaskExecInterface;
-import com.google.zxing.client.android.common.executor.AsyncTaskExecManager;
-
 /**
  * Finishes an activity after a period of inactivity if the device is on battery power.
  */
@@ -38,21 +35,20 @@ final class InactivityTimer {
   private static final long INACTIVITY_DELAY_MS = 5 * 60 * 1000L;
 
   private final Activity activity;
-  private final AsyncTaskExecInterface taskExec;
   private final BroadcastReceiver powerStatusReceiver;
-  private InactivityAsyncTask inactivityTask;
+  private AsyncTask<?,?,?> inactivityTask;
 
   InactivityTimer(Activity activity) {
     this.activity = activity;
-    taskExec = new AsyncTaskExecManager().build();
     powerStatusReceiver = new PowerStatusReceiver();
     onActivity();
   }
 
+  @SuppressWarnings("unchecked")
   synchronized void onActivity() {
     cancel();
     inactivityTask = new InactivityAsyncTask();
-    taskExec.execute(inactivityTask);
+    inactivityTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
   }
 
   public void onPause() {
@@ -108,4 +104,4 @@ final class InactivityTimer {
 
 }
 
-// r2381
+// r2880
