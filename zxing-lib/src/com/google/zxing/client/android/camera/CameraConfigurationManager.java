@@ -25,14 +25,14 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.google.zxing.client.android.PreferencesActivity;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-
-import me.yumin.android.zxing.etc.ZXingConstant;
 
 /**
  * A class which deals with reading, parsing, and setting the camera parameters which are used to
@@ -77,7 +77,7 @@ final class CameraConfigurationManager {
     Camera.Parameters parameters = camera.getParameters();
 
     // yumin
-    camera.setDisplayOrientation(90);
+	camera.setDisplayOrientation(90);
 
     if (parameters == null) {
       Log.w(TAG, "Device error: no camera parameters are available. Proceeding without configuration.");
@@ -95,8 +95,8 @@ final class CameraConfigurationManager {
     initializeTorch(parameters, prefs, safeMode);
 
     String focusMode = null;
-    if (prefs.getBoolean(ZXingConstant.KEY_AUTO_FOCUS, true)) {
-      if (safeMode || prefs.getBoolean(ZXingConstant.KEY_DISABLE_CONTINUOUS_FOCUS, false)) {
+    if (prefs.getBoolean(PreferencesActivity.KEY_AUTO_FOCUS, true)) {
+      if (safeMode || prefs.getBoolean(PreferencesActivity.KEY_DISABLE_CONTINUOUS_FOCUS, false)) {
         focusMode = findSettableValue(parameters.getSupportedFocusModes(),
                                       Camera.Parameters.FOCUS_MODE_AUTO);
       } else {
@@ -116,7 +116,7 @@ final class CameraConfigurationManager {
       parameters.setFocusMode(focusMode);
     }
 
-    if (prefs.getBoolean(ZXingConstant.KEY_INVERT_SCAN, false)) {
+    if (prefs.getBoolean(PreferencesActivity.KEY_INVERT_SCAN, false)) {
       String colorMode = findSettableValue(parameters.getSupportedColorEffects(),
                                            Camera.Parameters.EFFECT_NEGATIVE);
       if (colorMode != null) {

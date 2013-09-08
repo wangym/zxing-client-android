@@ -19,12 +19,14 @@ package com.google.zxing.client.android;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
+import com.google.zxing.ResultMetadataType;
 import com.google.zxing.client.android.camera.CameraManager;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -35,13 +37,8 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
-
-import me.yumin.android.zxing.etc.ZXingConstant;
-import me.yumin.android.zxing.etc.ZXingInput;
-import me.yumin.android.zxing.etc.ZXingOutput;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -51,12 +48,10 @@ import me.yumin.android.zxing.etc.ZXingOutput;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Sean Owen
  */
+@SuppressWarnings("unchecked")
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
   private static final String TAG = CaptureActivity.class.getSimpleName();
-
-  // yumin
-  private ZXingInput input = null;
 
   private CameraManager cameraManager;
   private CaptureActivityHandler handler;
@@ -85,14 +80,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   @Override
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
-
-    // yumin
-    Bundle extras = getIntent().getExtras();
-    Serializable serializable = extras.getSerializable(ZXingConstant.K_INPUT);
-    if (null == serializable) {
-    	throw new IllegalArgumentException("Key 'input' must not be null!");
-    }
-    input = (ZXingInput) serializable;
 
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -139,14 +126,40 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     inactivityTimer.onResume();
 
+    Intent intent = getIntent();
+
     decodeFormats = null;
     decodeHints = null;
-    characterSet = null;
+	characterSet = null;
 
-    // yumin
-    decodeFormats = input.getDecodeFormats();
-    decodeHints = input.getDecodeHints();
-    characterSet = input.getCharacterSet();
+    if (intent != null) {
+
+        String action = intent.getAction();
+
+        if (Intents.Scan.ACTION.equals(action)) {
+
+          // Scan the formats the intent requested, and return the result to the calling activity.
+          decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
+          decodeHints = DecodeHintManager.parseDecodeHints(intent);
+
+          if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
+            int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
+            int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
+            if (width > 0 && height > 0) {
+              cameraManager.setManualFramingRect(width, height);
+            }
+          }
+          
+          String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
+          if (customPromptMessage != null) {
+            statusView.setText(customPromptMessage);
+          }
+
+        }
+
+        characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
+
+      }
   }
 
   @Override
@@ -176,7 +189,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch (keyCode) {
       case KeyEvent.KEYCODE_BACK:
-        break;
+        setResult(RESULT_CANCELED);
+    	finish();
+    	return true;
       case KeyEvent.KEYCODE_FOCUS:
       case KeyEvent.KEYCODE_CAMERA:
         // Handle these events so they don't launch the Camera app
@@ -224,13 +239,53 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     // Then not from history, so beep/vibrate and we have an image to draw on
     beepManager.playBeepSoundAndVibrate();
 
-    // yumin
-    Bundle extras = new Bundle();
-    extras.putSerializable(ZXingConstant.K_OUTPUT, new ZXingOutput(rawResult));
-    Intent intent = new Intent();
-    intent.putExtras(extras);
-    intent.setClass(this, input.getResultActivity());
-    startActivity(intent);
+    handleDecodeExternally(rawResult);
+  }
+
+  // Briefly show the contents of the barcode, then handle the result outside Barcode Scanner.
+  private void handleDecodeExternally(Result rawResult) {
+
+    // Hand back whatever action they requested - this can be changed to Intents.Scan.ACTION when
+    // the deprecated intent is retired.
+    Intent intent = new Intent(getIntent().getAction());
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+    intent.putExtra(Intents.Scan.RESULT, rawResult.toString());
+    intent.putExtra(Intents.Scan.RESULT_FORMAT, rawResult.getBarcodeFormat().toString());
+    byte[] rawBytes = rawResult.getRawBytes();
+    if (rawBytes != null && rawBytes.length > 0) {
+      intent.putExtra(Intents.Scan.RESULT_BYTES, rawBytes);
+    }
+    Map<ResultMetadataType,?> metadata = rawResult.getResultMetadata();
+    if (metadata != null) {
+      if (metadata.containsKey(ResultMetadataType.UPC_EAN_EXTENSION)) {
+        intent.putExtra(Intents.Scan.RESULT_UPC_EAN_EXTENSION,
+                        metadata.get(ResultMetadataType.UPC_EAN_EXTENSION).toString());
+      }
+      Number orientation = (Number) metadata.get(ResultMetadataType.ORIENTATION);
+      if (orientation != null) {
+        intent.putExtra(Intents.Scan.RESULT_ORIENTATION, orientation.intValue());
+      }
+      String ecLevel = (String) metadata.get(ResultMetadataType.ERROR_CORRECTION_LEVEL);
+      if (ecLevel != null) {
+        intent.putExtra(Intents.Scan.RESULT_ERROR_CORRECTION_LEVEL, ecLevel);
+      }
+      Iterable<byte[]> byteSegments = (Iterable<byte[]>) metadata.get(ResultMetadataType.BYTE_SEGMENTS);
+      if (byteSegments != null) {
+        int i = 0;
+        for (byte[] byteSegment : byteSegments) {
+          intent.putExtra(Intents.Scan.RESULT_BYTE_SEGMENTS_PREFIX + i, byteSegment);
+          i++;
+        }
+      }
+    }
+    sendReplyMessage(R.id.return_scan_result, intent);
+  }
+  
+  private void sendReplyMessage(int id, Object arg) {
+    if (handler != null) {
+      Message message = Message.obtain(handler, id, arg);
+      handler.sendMessage(message);
+    }
   }
 
   private void initCamera(SurfaceHolder surfaceHolder) {

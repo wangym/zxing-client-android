@@ -21,7 +21,6 @@
             android:configChanges="keyboardHidden|orientation"
             android:exported="false"
             android:hardwareAccelerated="true"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:windowSoftInputMode="adjustPan|stateAlwaysHidden" >

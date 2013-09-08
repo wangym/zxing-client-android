@@ -57,7 +57,7 @@ public final class CaptureActivityHandler extends Handler {
                          CameraManager cameraManager) {
     this.activity = activity;
     decodeThread = new DecodeThread(activity, decodeFormats, baseHints, characterSet,
-            new ViewfinderResultPointCallback(activity.getViewfinderView()));
+        new ViewfinderResultPointCallback(activity.getViewfinderView()));
     decodeThread.start();
     state = State.SUCCESS;
 
@@ -70,20 +70,20 @@ public final class CaptureActivityHandler extends Handler {
   @Override
   public void handleMessage(Message message) {
     if (message.what == R.id.restart_preview) {
-        Log.d(TAG, "Got restart preview message");
-        restartPreviewAndDecode();
+		Log.d(TAG, "Got restart preview message");
+		restartPreviewAndDecode();
 	} else if (message.what == R.id.decode_succeeded) {
-        Log.d(TAG, "Got decode succeeded message");
-        state = State.SUCCESS;
-        activity.handleDecode((Result) message.obj);
+		Log.d(TAG, "Got decode succeeded message");
+		state = State.SUCCESS;
+		activity.handleDecode((Result) message.obj);
 	} else if (message.what == R.id.decode_failed) {
-        // We're decoding as fast as possible, so when one decode fails, start another.
+		// We're decoding as fast as possible, so when one decode fails, start another.
         state = State.PREVIEW;
-        cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+		cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
 	} else if (message.what == R.id.return_scan_result) {
-        Log.d(TAG, "Got return scan result message");
-        activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
-        activity.finish();
+		Log.d(TAG, "Got return scan result message");
+		activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
+		activity.finish();
 	}
   }
 

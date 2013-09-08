@@ -225,7 +225,7 @@ public final class CameraManager {
   }
   
   private static int findDesiredDimensionInRange(int resolution, int hardMin, int hardMax) {
-	int dim = 5 * resolution / 8; // Target 5/8 of each dimension
+    int dim = 5 * resolution / 8; // Target 5/8 of each dimension
     if (dim < hardMin) {
       return hardMin;
     }
@@ -252,11 +252,10 @@ public final class CameraManager {
         // Called early, before init even finished
         return null;
       }
-
       // yumin
-      rect.left = rect.left * cameraResolution.y / screenResolution.x;  
-      rect.right = rect.right * cameraResolution.y / screenResolution.x;  
-      rect.top = rect.top * cameraResolution.x / screenResolution.y;  
+      rect.left = rect.left * cameraResolution.y / screenResolution.x;
+      rect.right = rect.right * cameraResolution.y / screenResolution.x;
+      rect.top = rect.top * cameraResolution.x / screenResolution.y;
       rect.bottom = rect.bottom * cameraResolution.x / screenResolution.y;
       framingRectInPreview = rect;
     }
@@ -311,4 +310,4 @@ public final class CameraManager {
 
 }
 
-// 2816
+// r2816

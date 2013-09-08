@@ -30,8 +30,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import me.yumin.android.zxing.etc.ZXingConstant;
-
 /**
  * This thread does all the heavy lifting of decoding the images.
  *
@@ -61,9 +59,9 @@ final class DecodeThread extends Thread {
     // The prefs can't change while the thread is running, so pick them up once here.
     if (decodeFormats == null || decodeFormats.isEmpty()) {
       decodeFormats = EnumSet.noneOf(BarcodeFormat.class);
-      decodeFormats.addAll(ZXingConstant.ONE_D_FORMATS);
-      decodeFormats.addAll(ZXingConstant.QR_CODE_FORMATS);
-      decodeFormats.addAll(ZXingConstant.DATA_MATRIX_FORMATS);
+      decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
+      decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
+      decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
     }
     hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
 
