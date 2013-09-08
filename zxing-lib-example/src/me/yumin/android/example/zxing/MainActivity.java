@@ -3,9 +3,8 @@
  */
 package me.yumin.android.example.zxing;
 
-import me.yumin.android.zxing.etc.ZXingConstant;
-import me.yumin.android.zxing.etc.ZXingInput;
 import com.google.zxing.client.android.CaptureActivity;
+import com.google.zxing.client.android.Intents;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +16,8 @@ import android.content.Intent;
  * 
  */
 public class MainActivity extends Activity {
+
+	private static final int REQUEST_CODE = 200;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +54,31 @@ public class MainActivity extends Activity {
 		});
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		if (null != data && requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+			switch (resultCode) {
+			case Activity.RESULT_OK:
+				data.setClass(this, CaptureResultActivity.class);
+				startActivity(data);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
 	private void doZXing(String characterSet) {
 
-		ZXingInput input = new ZXingInput(CaptureResultActivity.class);
-		if (null != characterSet) {
-			input.setCharacterSet(characterSet);
-		}
-
-		Bundle bundle = new Bundle();
-		bundle.putSerializable(ZXingConstant.K_INPUT, input);
 		Intent intent = new Intent();
-		intent.putExtras(bundle);
+		intent.setAction(Intents.Scan.ACTION);
+		// intent.putExtra(Intents.Scan.MODE, Intents.Scan.QR_CODE_MODE);
+		intent.putExtra(Intents.Scan.CHARACTER_SET, characterSet);
+		intent.putExtra(Intents.Scan.WIDTH, 600);
+		intent.putExtra(Intents.Scan.HEIGHT, 600);
+		intent.putExtra(Intents.Scan.PROMPT_MESSAGE, "type your prompt message");
 		intent.setClass(this, CaptureActivity.class);
-		startActivity(intent);
+		startActivityForResult(intent, REQUEST_CODE);
 	}
 }

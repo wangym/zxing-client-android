@@ -3,11 +3,10 @@
  */
 package me.yumin.android.example.zxing;
 
-import me.yumin.android.zxing.etc.ZXingConstant;
-import me.yumin.android.zxing.etc.ZXingOutput;
+import com.google.zxing.client.android.Intents;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 /**
@@ -16,24 +15,36 @@ import android.widget.TextView;
  */
 public class CaptureResultActivity extends Activity {
 
+	/**
+	 * 
+	 */
+	private TextView tvResult;
+	private TextView tvResultFormat;
+	private TextView tvUri;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_capture_result);
 		initActivity();
+		initData();
 	}
 
 	private void initActivity() {
 
-		Bundle extras = getIntent().getExtras();
-		ZXingOutput output = (ZXingOutput) extras.getSerializable(ZXingConstant.K_OUTPUT);
-		if (null != output) {
-			Log.v("CaptureResultActivity", output.toString());
-			TextView tvFormat = (TextView) findViewById(R.id.tv_result_format);
-			tvFormat.setText(output.getBarcodeFormat().name());
-			TextView tvText = (TextView) findViewById(R.id.tv_result_text);
-			tvText.setText(output.getText());
+		tvResult = (TextView) findViewById(R.id.tv_result);
+		tvResultFormat = (TextView) findViewById(R.id.tv_result_format);
+		tvUri = (TextView) findViewById(R.id.tv_uri);
+	}
+
+	private void initData() {
+
+		Intent intent = getIntent();
+		if (null != intent) {
+			tvResult.setText(intent.getStringExtra(Intents.Scan.RESULT));
+			tvResultFormat.setText(intent.getStringExtra(Intents.Scan.RESULT_FORMAT));
+			tvUri.setText(intent.toUri(intent.getFlags()));
 		}
 	}
 }

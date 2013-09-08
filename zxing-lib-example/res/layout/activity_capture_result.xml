@@ -5,17 +5,25 @@
     android:layout_height="fill_parent" >
 
     <TextView
-        android:id="@+id/tv_result_format"
+        android:id="@+id/tv_result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_5"
         android:textIsSelectable="true" />
 
     <TextView
-        android:id="@+id/tv_result_text"
+        android:id="@+id/tv_result_format"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/tv_result_format"
+        android:layout_alignLeft="@id/tv_result"
+        android:layout_below="@id/tv_result"
+        android:textIsSelectable="true" />
+
+    <TextView
+        android:id="@+id/tv_uri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/tv_result"
         android:layout_below="@id/tv_result_format"
         android:textIsSelectable="true" />
 
