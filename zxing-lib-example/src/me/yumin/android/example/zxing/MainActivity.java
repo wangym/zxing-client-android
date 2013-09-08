@@ -27,37 +27,10 @@ public class MainActivity extends Activity {
 		initActivity();
 	}
 
-	private void initActivity() {
-
-		Button btnScan = (Button) findViewById(R.id.scan);
-		btnScan.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				doZXing(null);
-			}
-		});
-
-		Button btnScanGbk = (Button) findViewById(R.id.scan_gbk);
-		btnScanGbk.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				doZXing("GBK");
-			}
-		});
-
-		Button btnScanUtf8 = (Button) findViewById(R.id.scan_utf_8);
-		btnScanUtf8.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				doZXing("UTF-8");
-			}
-		});
-	}
-
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-		if (null != data && requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+		if (null != data && requestCode == REQUEST_CODE) {
 			switch (resultCode) {
 			case Activity.RESULT_OK:
 				data.setClass(this, CaptureResultActivity.class);
@@ -67,6 +40,31 @@ public class MainActivity extends Activity {
 				break;
 			}
 		}
+	}
+
+	private void initActivity() {
+
+		Button btnScan = (Button) findViewById(R.id.scan);
+		btnScan.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				doZXing(null);
+			}
+		});
+		Button btnScanGbk = (Button) findViewById(R.id.scan_gbk);
+		btnScanGbk.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				doZXing("GBK");
+			}
+		});
+		Button btnScanUtf8 = (Button) findViewById(R.id.scan_utf_8);
+		btnScanUtf8.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				doZXing("UTF-8");
+			}
+		});
 	}
 
 	private void doZXing(String characterSet) {
