@@ -130,7 +130,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     decodeFormats = null;
     decodeHints = null;
-	characterSet = null;
+    characterSet = null;
 
     if (intent != null) {
 
