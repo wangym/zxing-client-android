@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
     <TextView
-        android:id="@+id/tv_result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_5"
-        android:textIsSelectable="true" />
+            android:id="@+id/tv_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_5"
+            android:textIsSelectable="true"/>
 
     <TextView
-        android:id="@+id/tv_result_format"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/tv_result"
-        android:layout_below="@id/tv_result"
-        android:textIsSelectable="true" />
+            android:id="@+id/tv_result_format"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@id/tv_result"
+            android:layout_below="@id/tv_result"
+            android:textIsSelectable="true"/>
 
     <TextView
-        android:id="@+id/tv_uri"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/tv_result"
-        android:layout_below="@id/tv_result_format"
-        android:textIsSelectable="true" />
+            android:id="@+id/tv_uri"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@id/tv_result"
+            android:layout_below="@id/tv_result_format"
+            android:textIsSelectable="true"/>
 
 </RelativeLayout>
