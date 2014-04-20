@@ -59,7 +59,6 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
         start();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public synchronized void onAutoFocus(boolean success, Camera theCamera) {
         focusing = false;

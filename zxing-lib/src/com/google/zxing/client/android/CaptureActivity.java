@@ -147,6 +147,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
                 if (customPromptMessage != null) {
                     statusView.setText(customPromptMessage);
+                } else {
+                    statusView.setVisibility(View.INVISIBLE);
                 }
 
             }
