@@ -16,9 +16,6 @@
 
 package com.google.zxing.client.android;
 
-import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
-import android.preference.PreferenceManager;
 import android.view.*;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
