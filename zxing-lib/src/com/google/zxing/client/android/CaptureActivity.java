@@ -16,6 +16,10 @@
 
 package com.google.zxing.client.android;
 
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.preference.PreferenceManager;
+import android.view.*;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
@@ -28,12 +32,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -51,275 +49,291 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
-  private static final String TAG = CaptureActivity.class.getSimpleName();
+    private static final String TAG = CaptureActivity.class.getSimpleName();
 
-  private CameraManager cameraManager;
-  private CaptureActivityHandler handler;
-  private ViewfinderView viewfinderView;
-  private TextView statusView;
-  private boolean hasSurface;
-  private Collection<BarcodeFormat> decodeFormats;
-  private Map<DecodeHintType,?> decodeHints;
-  private String characterSet;
-  private InactivityTimer inactivityTimer;
-  private BeepManager beepManager;
-  private AmbientLightManager ambientLightManager;
+    private CameraManager cameraManager;
+    private CaptureActivityHandler handler;
+    private ViewfinderView viewfinderView;
+    private TextView statusView;
+    private boolean hasSurface;
+    private Collection<BarcodeFormat> decodeFormats;
+    private Map<DecodeHintType, ?> decodeHints;
+    private String characterSet;
+    private InactivityTimer inactivityTimer;
+    private BeepManager beepManager;
+    private AmbientLightManager ambientLightManager;
 
-  ViewfinderView getViewfinderView() {
-    return viewfinderView;
-  }
-
-  public Handler getHandler() {
-    return handler;
-  }
-
-  CameraManager getCameraManager() {
-    return cameraManager;
-  }
-
-  @Override
-  public void onCreate(Bundle icicle) {
-    super.onCreate(icicle);
-
-    Window window = getWindow();
-    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    setContentView(R.layout.activity_zxing_capture);
-
-    hasSurface = false;
-    inactivityTimer = new InactivityTimer(this);
-    beepManager = new BeepManager(this);
-    ambientLightManager = new AmbientLightManager(this);
-  }
-
-  @Override
-  protected void onResume() {
-    super.onResume();
-
-    // CameraManager must be initialized here, not in onCreate(). This is necessary because we don't
-    // want to open the camera driver and measure the screen size if we're going to show the help on
-    // first launch. That led to bugs where the scanning rectangle was the wrong size and partially
-    // off screen.
-    cameraManager = new CameraManager(getApplication());
-
-    viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-    viewfinderView.setCameraManager(cameraManager);
-
-    statusView = (TextView) findViewById(R.id.status_view);
-
-    handler = null;
-
-    resetStatusView();
-
-    SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
-    SurfaceHolder surfaceHolder = surfaceView.getHolder();
-    if (hasSurface) {
-      // The activity was paused but not stopped, so the surface still exists. Therefore
-      // surfaceCreated() won't be called, so init the camera here.
-      initCamera(surfaceHolder);
-    } else {
-      // Install the callback and wait for surfaceCreated() to init the camera.
-      surfaceHolder.addCallback(this);
+    ViewfinderView getViewfinderView() {
+        return viewfinderView;
     }
 
-    beepManager.updatePrefs();
-    ambientLightManager.start(cameraManager);
+    public Handler getHandler() {
+        return handler;
+    }
 
-    inactivityTimer.onResume();
+    CameraManager getCameraManager() {
+        return cameraManager;
+    }
 
-    Intent intent = getIntent();
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
 
-    decodeFormats = null;
-    decodeHints = null;
-    characterSet = null;
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setContentView(R.layout.activity_zxing_capture);
 
-    if (intent != null) {
+        hasSurface = false;
+        inactivityTimer = new InactivityTimer(this);
+        beepManager = new BeepManager(this);
+        ambientLightManager = new AmbientLightManager(this);
+    }
 
-        String action = intent.getAction();
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        if (Intents.Scan.ACTION.equals(action)) {
+        // CameraManager must be initialized here, not in onCreate(). This is necessary because we don't
+        // want to open the camera driver and measure the screen size if we're going to show the help on
+        // first launch. That led to bugs where the scanning rectangle was the wrong size and partially
+        // off screen.
+        cameraManager = new CameraManager(getApplication());
 
-          // Scan the formats the intent requested, and return the result to the calling activity.
-          decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
-          decodeHints = DecodeHintManager.parseDecodeHints(intent);
+        viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
+        viewfinderView.setCameraManager(cameraManager);
 
-          if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
-            int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
-            int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
-            if (width > 0 && height > 0) {
-              cameraManager.setManualFramingRect(width, height);
+        statusView = (TextView) findViewById(R.id.status_view);
+
+        handler = null;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (prefs.getBoolean(PreferencesActivity.KEY_DISABLE_AUTO_ORIENTATION, true)) {
+            setRequestedOrientation(getCurrentOrientation());
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        }
+
+        resetStatusView();
+
+        SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
+        SurfaceHolder surfaceHolder = surfaceView.getHolder();
+        if (hasSurface) {
+            // The activity was paused but not stopped, so the surface still exists. Therefore
+            // surfaceCreated() won't be called, so init the camera here.
+            initCamera(surfaceHolder);
+        } else {
+            // Install the callback and wait for surfaceCreated() to init the camera.
+            surfaceHolder.addCallback(this);
+        }
+
+        beepManager.updatePrefs();
+        ambientLightManager.start(cameraManager);
+
+        inactivityTimer.onResume();
+
+        Intent intent = getIntent();
+
+        decodeFormats = null;
+        characterSet = null;
+
+        if (intent != null) {
+
+            String action = intent.getAction();
+
+            if (Intents.Scan.ACTION.equals(action)) {
+
+                // Scan the formats the intent requested, and return the result to the calling activity.
+                decodeFormats = DecodeFormatManager.parseDecodeFormats(intent);
+                decodeHints = DecodeHintManager.parseDecodeHints(intent);
+
+                if (intent.hasExtra(Intents.Scan.WIDTH) && intent.hasExtra(Intents.Scan.HEIGHT)) {
+                    int width = intent.getIntExtra(Intents.Scan.WIDTH, 0);
+                    int height = intent.getIntExtra(Intents.Scan.HEIGHT, 0);
+                    if (width > 0 && height > 0) {
+                        cameraManager.setManualFramingRect(width, height);
+                    }
+                }
+
+                String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
+                if (customPromptMessage != null) {
+                    statusView.setText(customPromptMessage);
+                }
+
             }
-          }
-          
-          String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
-          if (customPromptMessage != null) {
-            statusView.setText(customPromptMessage);
-          }
+
+            characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
 
         }
-
-        characterSet = intent.getStringExtra(Intents.Scan.CHARACTER_SET);
-
-      }
-  }
-
-  @Override
-  protected void onPause() {
-    if (handler != null) {
-      handler.quitSynchronously();
-      handler = null;
     }
-    inactivityTimer.onPause();
-    ambientLightManager.stop();
-    cameraManager.closeDriver();
-    if (!hasSurface) {
-      SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
-      SurfaceHolder surfaceHolder = surfaceView.getHolder();
-      surfaceHolder.removeCallback(this);
+
+    private int getCurrentOrientation() {
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        switch (rotation) {
+            case Surface.ROTATION_0:
+            case Surface.ROTATION_90:
+                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            default:
+                return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+        }
     }
-    super.onPause();
-  }
 
-  @Override
-  protected void onDestroy() {
-    inactivityTimer.shutdown();
-    super.onDestroy();
-  }
-
-  @Override
-  public boolean onKeyDown(int keyCode, KeyEvent event) {
-    switch (keyCode) {
-      case KeyEvent.KEYCODE_BACK:
-        setResult(RESULT_CANCELED);
-    	finish();
-    	return true;
-      case KeyEvent.KEYCODE_FOCUS:
-      case KeyEvent.KEYCODE_CAMERA:
-        // Handle these events so they don't launch the Camera app
-        return true;
-      // Use volume up/down to turn on light
-      case KeyEvent.KEYCODE_VOLUME_DOWN:
-        cameraManager.setTorch(false);
-        return true;
-      case KeyEvent.KEYCODE_VOLUME_UP:
-        cameraManager.setTorch(true);
-        return true;
+    @Override
+    protected void onPause() {
+        if (handler != null) {
+            handler.quitSynchronously();
+            handler = null;
+        }
+        inactivityTimer.onPause();
+        ambientLightManager.stop();
+        cameraManager.closeDriver();
+        if (!hasSurface) {
+            SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
+            SurfaceHolder surfaceHolder = surfaceView.getHolder();
+            surfaceHolder.removeCallback(this);
+        }
+        super.onPause();
     }
-    return super.onKeyDown(keyCode, event);
-  }
 
-  @Override
-  public void surfaceCreated(SurfaceHolder holder) {
-    if (holder == null) {
-      Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
+    @Override
+    protected void onDestroy() {
+        inactivityTimer.shutdown();
+        super.onDestroy();
     }
-    if (!hasSurface) {
-      hasSurface = true;
-      initCamera(holder);
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                setResult(RESULT_CANCELED);
+                finish();
+                return true;
+            case KeyEvent.KEYCODE_FOCUS:
+            case KeyEvent.KEYCODE_CAMERA:
+                // Handle these events so they don't launch the Camera app
+                return true;
+            // Use volume up/down to turn on light
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                cameraManager.setTorch(false);
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                cameraManager.setTorch(true);
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
-  }
 
-  @Override
-  public void surfaceDestroyed(SurfaceHolder holder) {
-    hasSurface = false;
-  }
-
-  @Override
-  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-  }
-
-  /**
-   * A valid barcode has been found, so give an indication of success and show the results.
-   *
-   * @param rawResult The contents of the barcode.
-   */
-  public void handleDecode(Result rawResult) {
-    inactivityTimer.onActivity();
-
-    // Then not from history, so beep/vibrate and we have an image to draw on
-    beepManager.playBeepSoundAndVibrate();
-
-    handleDecodeExternally(rawResult);
-  }
-
-  // Briefly show the contents of the barcode, then handle the result outside Barcode Scanner.
-  private void handleDecodeExternally(Result rawResult) {
-
-    // Hand back whatever action they requested - this can be changed to Intents.Scan.ACTION when
-    // the deprecated intent is retired.
-    Intent intent = new Intent(getIntent().getAction());
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-    intent.putExtra(Intents.Scan.RESULT, rawResult.toString());
-    intent.putExtra(Intents.Scan.RESULT_FORMAT, rawResult.getBarcodeFormat().toString());
-    byte[] rawBytes = rawResult.getRawBytes();
-    if (rawBytes != null && rawBytes.length > 0) {
-      intent.putExtra(Intents.Scan.RESULT_BYTES, rawBytes);
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        if (holder == null) {
+            Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
+        }
+        if (!hasSurface) {
+            hasSurface = true;
+            initCamera(holder);
+        }
     }
-    Map<ResultMetadataType,?> metadata = rawResult.getResultMetadata();
-    if (metadata != null) {
-      if (metadata.containsKey(ResultMetadataType.UPC_EAN_EXTENSION)) {
-        intent.putExtra(Intents.Scan.RESULT_UPC_EAN_EXTENSION,
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        hasSurface = false;
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    /**
+     * A valid barcode has been found, so give an indication of success and show the results.
+     *
+     * @param rawResult The contents of the barcode.
+     */
+    public void handleDecode(Result rawResult) {
+        inactivityTimer.onActivity();
+
+        // Then not from history, so beep/vibrate and we have an image to draw on
+        beepManager.playBeepSoundAndVibrate();
+
+        handleDecodeExternally(rawResult);
+    }
+
+    // Briefly show the contents of the barcode, then handle the result outside Barcode Scanner.
+    private void handleDecodeExternally(Result rawResult) {
+
+        // Hand back whatever action they requested - this can be changed to Intents.Scan.ACTION when
+        // the deprecated intent is retired.
+        Intent intent = new Intent(getIntent().getAction());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        intent.putExtra(Intents.Scan.RESULT, rawResult.toString());
+        intent.putExtra(Intents.Scan.RESULT_FORMAT, rawResult.getBarcodeFormat().toString());
+        byte[] rawBytes = rawResult.getRawBytes();
+        if (rawBytes != null && rawBytes.length > 0) {
+            intent.putExtra(Intents.Scan.RESULT_BYTES, rawBytes);
+        }
+        Map<ResultMetadataType, ?> metadata = rawResult.getResultMetadata();
+        if (metadata != null) {
+            if (metadata.containsKey(ResultMetadataType.UPC_EAN_EXTENSION)) {
+                intent.putExtra(Intents.Scan.RESULT_UPC_EAN_EXTENSION,
                         metadata.get(ResultMetadataType.UPC_EAN_EXTENSION).toString());
-      }
-      Number orientation = (Number) metadata.get(ResultMetadataType.ORIENTATION);
-      if (orientation != null) {
-        intent.putExtra(Intents.Scan.RESULT_ORIENTATION, orientation.intValue());
-      }
-      String ecLevel = (String) metadata.get(ResultMetadataType.ERROR_CORRECTION_LEVEL);
-      if (ecLevel != null) {
-        intent.putExtra(Intents.Scan.RESULT_ERROR_CORRECTION_LEVEL, ecLevel);
-      }
-      Iterable<byte[]> byteSegments = (Iterable<byte[]>) metadata.get(ResultMetadataType.BYTE_SEGMENTS);
-      if (byteSegments != null) {
-        int i = 0;
-        for (byte[] byteSegment : byteSegments) {
-          intent.putExtra(Intents.Scan.RESULT_BYTE_SEGMENTS_PREFIX + i, byteSegment);
-          i++;
+            }
+            Number orientation = (Number) metadata.get(ResultMetadataType.ORIENTATION);
+            if (orientation != null) {
+                intent.putExtra(Intents.Scan.RESULT_ORIENTATION, orientation.intValue());
+            }
+            String ecLevel = (String) metadata.get(ResultMetadataType.ERROR_CORRECTION_LEVEL);
+            if (ecLevel != null) {
+                intent.putExtra(Intents.Scan.RESULT_ERROR_CORRECTION_LEVEL, ecLevel);
+            }
+            Iterable<byte[]> byteSegments = (Iterable<byte[]>) metadata.get(ResultMetadataType.BYTE_SEGMENTS);
+            if (byteSegments != null) {
+                int i = 0;
+                for (byte[] byteSegment : byteSegments) {
+                    intent.putExtra(Intents.Scan.RESULT_BYTE_SEGMENTS_PREFIX + i, byteSegment);
+                    i++;
+                }
+            }
         }
-      }
+        sendReplyMessage(R.id.return_scan_result, intent);
     }
-    sendReplyMessage(R.id.return_scan_result, intent);
-  }
-  
-  private void sendReplyMessage(int id, Object arg) {
-    if (handler != null) {
-      Message message = Message.obtain(handler, id, arg);
-      handler.sendMessage(message);
-    }
-  }
 
-  private void initCamera(SurfaceHolder surfaceHolder) {
-    if (surfaceHolder == null) {
-      throw new IllegalStateException("No SurfaceHolder provided");
+    private void sendReplyMessage(int id, Object arg) {
+        if (handler != null) {
+            Message message = Message.obtain(handler, id, arg);
+            handler.sendMessage(message);
+        }
     }
-    if (cameraManager.isOpen()) {
-      Log.w(TAG, "initCamera() while already open -- late SurfaceView callback?");
-      return;
-    }
-    try {
-      cameraManager.openDriver(surfaceHolder);
-      // Creating the handler starts the preview, which can also throw a RuntimeException.
-      if (handler == null) {
-        handler = new CaptureActivityHandler(this, decodeFormats, decodeHints, characterSet, cameraManager);
-      }
-    } catch (IOException ioe) {
-      Log.w(TAG, ioe);
-    } catch (RuntimeException e) {
-      // Barcode Scanner has seen crashes in the wild of this variety:
-      // java.?lang.?RuntimeException: Fail to connect to camera service
-      Log.w(TAG, "Unexpected error initializing camera", e);
-    }
-  }
 
-  private void resetStatusView() {
-    statusView.setText(R.string.zxing_msg_default_status);
-    statusView.setVisibility(View.VISIBLE);
-    viewfinderView.setVisibility(View.VISIBLE);
-  }
+    private void initCamera(SurfaceHolder surfaceHolder) {
+        if (surfaceHolder == null) {
+            throw new IllegalStateException("No SurfaceHolder provided");
+        }
+        if (cameraManager.isOpen()) {
+            Log.w(TAG, "initCamera() while already open -- late SurfaceView callback?");
+            return;
+        }
+        try {
+            cameraManager.openDriver(surfaceHolder);
+            // Creating the handler starts the preview, which can also throw a RuntimeException.
+            if (handler == null) {
+                handler = new CaptureActivityHandler(this, decodeFormats, decodeHints, characterSet, cameraManager);
+            }
+        } catch (IOException ioe) {
+            Log.w(TAG, ioe);
+        } catch (RuntimeException e) {
+            // Barcode Scanner has seen crashes in the wild of this variety:
+            // java.?lang.?RuntimeException: Fail to connect to camera service
+            Log.w(TAG, "Unexpected error initializing camera", e);
+        }
+    }
 
-  public void drawViewfinder() {
-    viewfinderView.drawViewfinder();
-  }
+    private void resetStatusView() {
+        statusView.setText(R.string.zxing_msg_default_status);
+        statusView.setVisibility(View.VISIBLE);
+        viewfinderView.setVisibility(View.VISIBLE);
+    }
+
+    public void drawViewfinder() {
+        viewfinderView.drawViewfinder();
+    }
 }
-
-// r2880
