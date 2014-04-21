@@ -1,6 +1,10 @@
+/.idea/
 /.settings/
 /bin/
 /gen/
-/.classpath
-/.project
-/*.iml
+/out/
+/target/
+*.iml
+.classpath
+.project
+
