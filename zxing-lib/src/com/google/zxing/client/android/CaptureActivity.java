@@ -144,11 +144,16 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                     }
                 }
 
+                if (intent.hasExtra(Intents.Scan.CAMERA_ID)) {
+                    int cameraId = intent.getIntExtra(Intents.Scan.CAMERA_ID, -1);
+                    if (cameraId >= 0) {
+                        cameraManager.setManualCameraId(cameraId);
+                    }
+                }
+
                 String customPromptMessage = intent.getStringExtra(Intents.Scan.PROMPT_MESSAGE);
                 if (customPromptMessage != null) {
                     statusView.setText(customPromptMessage);
-                } else {
-                    statusView.setVisibility(View.INVISIBLE);
                 }
 
             }
@@ -166,6 +171,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         }
         inactivityTimer.onPause();
         ambientLightManager.stop();
+        beepManager.close();
         cameraManager.closeDriver();
         if (!hasSurface) {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
@@ -251,7 +257,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         if (rawBytes != null && rawBytes.length > 0) {
             intent.putExtra(Intents.Scan.RESULT_BYTES, rawBytes);
         }
-        Map<ResultMetadataType, ?> metadata = rawResult.getResultMetadata();
+        Map<ResultMetadataType,?> metadata = rawResult.getResultMetadata();
         if (metadata != null) {
             if (metadata.containsKey(ResultMetadataType.UPC_EAN_EXTENSION)) {
                 intent.putExtra(Intents.Scan.RESULT_UPC_EAN_EXTENSION,
@@ -265,6 +271,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             if (ecLevel != null) {
                 intent.putExtra(Intents.Scan.RESULT_ERROR_CORRECTION_LEVEL, ecLevel);
             }
+            @SuppressWarnings("unchecked")
             Iterable<byte[]> byteSegments = (Iterable<byte[]>) metadata.get(ResultMetadataType.BYTE_SEGMENTS);
             if (byteSegments != null) {
                 int i = 0;

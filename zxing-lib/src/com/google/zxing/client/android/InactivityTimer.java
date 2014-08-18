@@ -37,7 +37,7 @@ final class InactivityTimer {
     private final Activity activity;
     private final BroadcastReceiver powerStatusReceiver;
     private boolean registered;
-    private AsyncTask<?, ?, ?> inactivityTask;
+    private AsyncTask<Object,Object,Object> inactivityTask;
 
     InactivityTimer(Activity activity) {
         this.activity = activity;
@@ -46,14 +46,13 @@ final class InactivityTimer {
         onActivity();
     }
 
-    @SuppressWarnings("unchecked")
     synchronized void onActivity() {
         cancel();
         inactivityTask = new InactivityAsyncTask();
         inactivityTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    public void onPause() {
+    public synchronized void onPause() {
         cancel();
         if (registered) {
             activity.unregisterReceiver(powerStatusReceiver);
@@ -63,7 +62,7 @@ final class InactivityTimer {
         }
     }
 
-    public void onResume() {
+    public synchronized void onResume() {
         if (registered) {
             Log.w(TAG, "PowerStatusReceiver was already registered?");
         } else {
@@ -74,7 +73,7 @@ final class InactivityTimer {
     }
 
     private synchronized void cancel() {
-        AsyncTask<?, ?, ?> task = inactivityTask;
+        AsyncTask<?,?,?> task = inactivityTask;
         if (task != null) {
             task.cancel(true);
             inactivityTask = null;
@@ -87,7 +86,7 @@ final class InactivityTimer {
 
     private final class PowerStatusReceiver extends BroadcastReceiver {
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, Intent intent){
             if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
                 // 0 indicates that we're on battery
                 boolean onBatteryNow = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) <= 0;
@@ -100,7 +99,7 @@ final class InactivityTimer {
         }
     }
 
-    private final class InactivityAsyncTask extends AsyncTask<Object, Object, Object> {
+    private final class InactivityAsyncTask extends AsyncTask<Object,Object,Object> {
         @Override
         protected Object doInBackground(Object... objects) {
             try {
