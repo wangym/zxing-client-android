@@ -50,26 +50,26 @@ public class MainActivity extends Activity {
         btnScan.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                doZXing(null);
+                callCapture(null);
             }
         });
         Button btnScanGbk = (Button) findViewById(R.id.scan_gbk);
         btnScanGbk.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                doZXing("GBK");
+                callCapture("GBK");
             }
         });
         Button btnScanUtf8 = (Button) findViewById(R.id.scan_utf_8);
         btnScanUtf8.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                doZXing("UTF-8");
+                callCapture("UTF-8");
             }
         });
     }
 
-    private void doZXing(String characterSet) {
+    private void callCapture(String characterSet) {
 
         Intent intent = new Intent();
         intent.setAction(Intents.Scan.ACTION);
