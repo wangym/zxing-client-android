@@ -19,7 +19,7 @@
                 android:name=".CaptureActivity"
                 android:clearTaskOnLaunch="true"
                 android:stateNotNeeded="true"
-                android:screenOrientation="sensorLandscape"
+                android:screenOrientation="portrait"
                 android:theme="@style/CaptureTheme"
                 android:windowSoftInputMode="stateAlwaysHidden">
         </activity>
