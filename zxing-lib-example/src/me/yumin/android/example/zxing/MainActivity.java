@@ -75,8 +75,8 @@ public class MainActivity extends Activity {
         intent.setAction(Intents.Scan.ACTION);
         // intent.putExtra(Intents.Scan.MODE, Intents.Scan.QR_CODE_MODE);
         intent.putExtra(Intents.Scan.CHARACTER_SET, characterSet);
-        intent.putExtra(Intents.Scan.WIDTH, 600);
-        intent.putExtra(Intents.Scan.HEIGHT, 400);
+        intent.putExtra(Intents.Scan.WIDTH, 800);
+        intent.putExtra(Intents.Scan.HEIGHT, 600);
         // intent.putExtra(Intents.Scan.PROMPT_MESSAGE, "type your prompt message");
         intent.setClass(this, CaptureActivity.class);
         startActivityForResult(intent, REQUEST_CODE);
